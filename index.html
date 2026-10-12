@@ -1,17 +1,4 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="./style.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pen</title>
-  </head>
-  <body>
-
-    <script src="./script.js"></script>
-  </body>
-</html>
-<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -134,10 +121,11 @@
 
         .progress-bar {
             height: 8px;
-            width: 12.5%; /* 2/16 = 12.5% */
+            width: 18.75%; /* 3/16 = 18.75% */
             background: linear-gradient(90deg, var(--secondary-neon), var(--primary-neon));
             border-radius: 20px;
             box-shadow: 0 0 10px var(--primary-neon);
+            transition: width 0.5s ease;
         }
 
         .progress-text {
@@ -281,14 +269,12 @@
         /* ==========================================
            5. 響應式佈局 (Responsive Design)
            ========================================== */
-        /* 平板尺寸：每行 2 個 */
         @media (max-width: 850px) {
             .grid-container {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
 
-        /* 手機尺寸：每行 1 個 */
         @media (max-width: 480px) {
             body {
                 padding: 20px 15px;
@@ -317,7 +303,6 @@
         <div class="profile-section">
             <div class="avatar-wrapper">
                 <div class="avatar-glow"></div>
-                <!-- 預設假圖片 (可替換為您的頭像檔案路徑，例如: avatar.jpg) -->
                 <img src="https://i.postimg.cc/BQm7xS3C/unnamed.webp" alt="大頭貼" class="avatar">
             </div>
             <h1 class="profile-name">余冠毅</h1>
@@ -326,7 +311,7 @@
             <div class="progress-container">
                 <div class="progress-bar"></div>
             </div>
-            <p class="progress-text">學習進度：2 / 16 關卡已解鎖 (12.5%)</p>
+            <p class="progress-text">學習進度：3 / 16 關卡已解鎖 (18.75%)</p>
         </div>
 
         <!-- 16 個關卡按鈕網格 -->
@@ -350,15 +335,16 @@
                 <div class="card-title">Week 2 - 今天吃甚麼？</div>
             </a>
 
-            <!-- Week 3 ~ Week 16 (未解鎖狀態) -->
-            <a href="javascript:void(0);" class="level-card locked">
+            <!-- Week 3 (已解鎖) -->
+            <a href="w3/index.html" class="level-card unlocked">
                 <div class="card-header">
                     <span class="badge">WEEK 03</span>
-                    <span class="lock-icon">🔒</span>
+                    <span class="status-icon">🎭</span>
                 </div>
-                <div class="card-title">未解鎖關卡</div>
+                <div class="card-title">Week 3 - 迷因產生器</div>
             </a>
 
+            <!-- Week 4 ~ Week 16 (未解鎖狀態) -->
             <a href="javascript:void(0);" class="level-card locked">
                 <div class="card-header">
                     <span class="badge">WEEK 04</span>
