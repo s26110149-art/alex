@@ -121,7 +121,7 @@
 
         .progress-bar {
             height: 8px;
-            width: 18.75%; /* 3/16 = 18.75% */
+            width: 25%; /* 4/16 = 25% */
             background: linear-gradient(90deg, var(--secondary-neon), var(--primary-neon));
             border-radius: 20px;
             box-shadow: 0 0 10px var(--primary-neon);
@@ -311,7 +311,7 @@
             <div class="progress-container">
                 <div class="progress-bar"></div>
             </div>
-            <p class="progress-text">學習進度：3 / 16 關卡已解鎖 (18.75%)</p>
+            <p class="progress-text">學習進度：4 / 16 關卡已解鎖 (25%)</p>
         </div>
 
         <!-- 16 個關卡按鈕網格 -->
@@ -344,15 +344,16 @@
                 <div class="card-title">Week 3 - 迷因產生器</div>
             </a>
 
-            <!-- Week 4 ~ Week 16 (未解鎖狀態) -->
-            <a href="javascript:void(0);" class="level-card locked">
+            <!-- Week 4 (已解鎖) -->
+            <a href="w4/index.html" class="level-card unlocked">
                 <div class="card-header">
                     <span class="badge">WEEK 04</span>
-                    <span class="lock-icon">🔒</span>
+                    <span class="status-icon">💬</span>
                 </div>
-                <div class="card-title">未解鎖關卡</div>
+                <div class="card-title">Week 4 - 悄悄話</div>
             </a>
 
+            <!-- Week 5 ~ Week 16 (未解鎖狀態) -->
             <a href="javascript:void(0);" class="level-card locked">
                 <div class="card-header">
                     <span class="badge">WEEK 05</span>
