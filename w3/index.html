@@ -1,525 +1,457 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>美式迷因產生器 | USA Meme Generator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>網頁程式課程作品集 | Level Select</title>
+    <style>
+        /* ==========================================
+           1. 全局樣式與變數設定 (CSS Variables)
+           ========================================== */
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(22, 27, 46, 0.7);
+            --border-color: rgba(0, 240, 255, 0.2);
+            --primary-neon: #00f0ff;
+            --secondary-neon: #7000ff;
+            --locked-color: #3a415a;
+            --text-main: #f0f4f8;
+            --text-sub: #8a99ad;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-  <!-- 1. 引入 Google Fonts 美式經典風格字體 (Impact 替代風格 Impact/Bebas Neue/Anton) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bangers&family=Noto+Sans+TC:wght@700;900&display=swap" rel="stylesheet">
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-  <!-- 2. 引入 html2canvas CDN，用來將 HTML 區塊轉為圖片下載 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/org/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <!-- 備用 html2canvas 官方 CDN -->
-  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(112, 0, 255, 0.15) 0%, transparent 60%),
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            color: var(--text-main);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
 
-  <style>
-    /* ==========================================
-       CSS 樣式設定 (美式漫畫 / 新暴列主義波普風格)
-       ========================================== */
-    
-    :root {
-      --primary-color: #ff2a5f;   /* 美式美艷紅 */
-      --secondary-color: #00d2ff; /* 亮美式藍 */
-      --accent-color: #ffde00;    /* 美式經典黃 */
-      --bg-color: #f3f3f0;        /* 背景灰白 */
-      --dark-border: #121212;     /* 粗黑框顏色 */
-      --box-shadow-main: 6px 6px 0px var(--dark-border); /* 立體黑陰影 */
-    }
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+        /* ==========================================
+           2. 個人資訊區 (Header Profile)
+           ========================================== */
+        .profile-section {
+            text-align: center;
+            margin-bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    body {
-      font-family: 'Noto Sans TC', sans-serif;
-      background-color: var(--bg-color);
-      /* 美式漫畫點陣波普背景 (Polka Dot) */
-      background-image: radial-gradient(#121212 15%, transparent 16%);
-      background-size: 20px 20px;
-      color: #121212;
-      padding: 20px 10px;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+        /* 大頭貼與發光光暈 */
+        .avatar-wrapper {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            margin-bottom: 20px;
+        }
 
-    /* 頁頭標題區塊 */
-    header {
-      text-align: center;
-      margin-bottom: 25px;
-      position: relative;
-    }
+        .avatar-glow {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon));
+            filter: blur(12px);
+            opacity: 0.8;
+            animation: pulse-glow 3s infinite alternate;
+        }
 
-    header h1 {
-      font-family: 'Bangers', 'Noto Sans TC', cursive;
-      font-size: 3rem;
-      letter-spacing: 2px;
-      color: var(--accent-color);
-      /* 經典美式立體文字邊框 */
-      text-shadow: 
-        3px 3px 0 var(--dark-border),
-        -3px -3px 0 var(--dark-border),
-        3px -3px 0 var(--dark-border),
-        -3px 3px 0 var(--dark-border),
-        6px 6px 0 var(--primary-color);
-      transform: rotate(-2deg);
-    }
+        .avatar {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid var(--primary-neon);
+            object-fit: cover;
+            background-color: #121829;
+        }
 
-    header p {
-      font-weight: 900;
-      background: white;
-      display: inline-block;
-      padding: 4px 12px;
-      border: 3px solid var(--dark-border);
-      box-shadow: 3px 3px 0 var(--dark-border);
-      margin-top: 8px;
-      font-size: 1rem;
-    }
+        .profile-name {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ffffff, var(--primary-neon));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
 
-    /* 主要容器：電腦版左右分割，手機版上下排列 */
-    .container {
-      width: 100%;
-      max-width: 1100px;
-      display: flex;
-      flex-direction: column;
-      gap: 25px;
-      background: white;
-      border: 4px solid var(--dark-border);
-      box-shadow: var(--box-shadow-main);
-      padding: 25px;
-      border-radius: 12px;
-    }
+        .profile-title {
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
 
-    @media (min-width: 850px) {
-      .container {
-        flex-direction: row;
-        align-items: flex-start;
-      }
-    }
+        /* 遊戲進度條 */
+        .progress-container {
+            width: 240px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
 
-    /* 左側控制面板區塊 */
-    .controls-panel {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
+        .progress-bar {
+            height: 8px;
+            width: 25%; /* 4/16 = 25% */
+            background: linear-gradient(90deg, var(--secondary-neon), var(--primary-neon));
+            border-radius: 20px;
+            box-shadow: 0 0 10px var(--primary-neon);
+            transition: width 0.5s ease;
+        }
 
-    .panel-title {
-      font-family: 'Bangers', cursive;
-      font-size: 1.8rem;
-      color: var(--primary-color);
-      border-bottom: 3px solid var(--dark-border);
-      padding-bottom: 5px;
-      letter-spacing: 1px;
-    }
+        .progress-text {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            margin-top: 6px;
+        }
 
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
+        /* ==========================================
+           3. 關卡網格與按鈕 (Grid & Level Cards)
+           ========================================== */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
 
-    .form-group label {
-      font-weight: 900;
-      font-size: 0.95rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+        .level-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px 15px;
+            text-decoration: none;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 120px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
 
-    .form-group label span.val-badge {
-      background: var(--accent-color);
-      border: 2px solid var(--dark-border);
-      padding: 1px 6px;
-      font-size: 0.8rem;
-      border-radius: 4px;
-    }
+        /* 已解鎖按鈕 Hover 效果 */
+        .level-card.unlocked:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: var(--primary-neon);
+            box-shadow: 0 8px 25px rgba(0, 240, 255, 0.25),
+                        inset 0 0 15px rgba(0, 240, 255, 0.1);
+        }
 
-    /* 美式風格 Input 文字框 */
-    input[type="text"] {
-      width: 100%;
-      padding: 10px 14px;
-      font-size: 1rem;
-      font-weight: bold;
-      border: 3px solid var(--dark-border);
-      border-radius: 6px;
-      outline: none;
-      box-shadow: 3px 3px 0 var(--dark-border);
-      transition: all 0.2s ease;
-    }
+        /* 光影劃過 (Shimmer Animation) */
+        .level-card.unlocked::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255, 255, 255, 0.05),
+                transparent
+            );
+            transform: rotate(45deg) translateY(-100%);
+            transition: transform 0.6s ease;
+        }
 
-    input[type="text"]:focus {
-      background-color: #fffde7;
-      transform: translate(-2px, -2px);
-      box-shadow: 5px 5px 0 var(--dark-border);
-    }
+        .level-card.unlocked:hover::before {
+            transform: rotate(45deg) translateY(100%);
+        }
 
-    /* 自訂圖片上傳按鈕樣式 */
-    .file-upload-btn {
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      background: var(--secondary-color);
-      color: #121212;
-      font-weight: 900;
-      padding: 12px;
-      border: 3px solid var(--dark-border);
-      border-radius: 8px;
-      box-shadow: 4px 4px 0 var(--dark-border);
-      cursor: pointer;
-      transition: transform 0.1s, box-shadow 0.1s;
-      text-align: center;
-    }
+        /* 未解鎖按鈕樣式 */
+        .level-card.locked {
+            background: rgba(15, 20, 32, 0.5);
+            border-color: rgba(255, 255, 255, 0.05);
+            color: var(--locked-color);
+            cursor: not-allowed;
+            filter: grayscale(80%);
+        }
 
-    .file-upload-btn:hover {
-      transform: translate(-2px, -2px);
-      box-shadow: 6px 6px 0 var(--dark-border);
-    }
+        .level-card.locked:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
 
-    .file-upload-btn:active {
-      transform: translate(2px, 2px);
-      box-shadow: 2px 2px 0 var(--dark-border);
-    }
+        /* 卡片內部元素 */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
 
-    .file-upload-btn input[type="file"] {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
-    }
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 1px;
+        }
 
-    /* 滑桿 (Range Slider) 樣式 */
-    input[type="range"] {
-      -webkit-appearance: none;
-      width: 100%;
-      height: 10px;
-      background: #ddd;
-      border: 2px solid var(--dark-border);
-      border-radius: 5px;
-      outline: none;
-    }
+        .unlocked .badge {
+            background: rgba(0, 240, 255, 0.15);
+            color: var(--primary-neon);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+        }
 
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: var(--primary-color);
-      border: 2px solid var(--dark-border);
-      cursor: pointer;
-      box-shadow: 2px 2px 0 var(--dark-border);
-    }
+        .locked .badge {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--locked-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-    /* 超酷一鍵下載按鈕 */
-    .download-btn {
-      margin-top: 10px;
-      background: var(--accent-color);
-      color: #121212;
-      font-family: 'Bangers', 'Noto Sans TC', cursive;
-      font-size: 1.6rem;
-      letter-spacing: 1px;
-      padding: 14px 20px;
-      border: 4px solid var(--dark-border);
-      border-radius: 8px;
-      box-shadow: 5px 5px 0 var(--dark-border);
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      transition: transform 0.1s, box-shadow 0.1s;
-    }
+        .lock-icon {
+            font-size: 1.1rem;
+        }
 
-    .download-btn:hover {
-      background: #ffe600;
-      transform: translate(-3px, -3px);
-      box-shadow: 8px 8px 0 var(--dark-border);
-    }
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            transition: color 0.3s ease;
+        }
 
-    .download-btn:active {
-      transform: translate(2px, 2px);
-      box-shadow: 3px 3px 0 var(--dark-border);
-    }
+        .unlocked:hover .card-title {
+            color: var(--primary-neon);
+        }
 
-    /* 右側即時預覽區塊 */
-    .preview-panel {
-      flex: 1.2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-    }
+        .locked .card-title {
+            color: var(--locked-color);
+        }
 
-    /* 迷因畫布外框（html2canvas 擷取目標） */
-    .meme-canvas-wrapper {
-      position: relative;
-      width: 100%;
-      max-width: 500px;
-      background: #222;
-      border: 4px solid var(--dark-border);
-      box-shadow: var(--box-shadow-main);
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      user-select: none;
-    }
+        /* ==========================================
+           4. 動畫效果 (Animations)
+           ========================================== */
+        @keyframes pulse-glow {
+            0% {
+                transform: scale(0.98);
+                opacity: 0.6;
+            }
+            100% {
+                transform: scale(1.03);
+                opacity: 0.9;
+            }
+        }
 
-    /* 預覽圖片 */
-    .meme-image {
-      width: 100%;
-      height: auto;
-      display: block;
-      object-fit: contain;
-    }
+        /* ==========================================
+           5. 響應式佈局 (Responsive Design)
+           ========================================== */
+        @media (max-width: 850px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
 
-    /* 上方與下方迷因文字共通屬性 */
-    .meme-text {
-      position: absolute;
-      width: 90%;
-      left: 5%;
-      text-align: center;
-      font-family: 'Anton', 'Impact', sans-serif; /* 經典美式 Impact 粗體迷因字型 */
-      text-transform: uppercase;
-      color: white;
-      line-height: 1.1;
-      word-wrap: break-word;
-      
-      /* 強大黑色邊框的效果 (使用多重 text-shadow 確保所有視角清晰) */
-      text-shadow: 
-        3px 3px 0 #000,
-       -3px -3px 0 #000,
-        3px -3px 0 #000,
-       -3px 3px 0 #000,
-        0px 3px 0 #000,
-        0px -3px 0 #000,
-        3px 0px 0 #000,
-       -3px 0px 0 #000,
-        4px 4px 5px rgba(0,0,0,0.8);
-    }
+        @media (max-width: 480px) {
+            body {
+                padding: 20px 15px;
+            }
 
-    .meme-text-top {
-      top: 5%;
-    }
+            .grid-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
 
-    .meme-text-bottom {
-      bottom: 5%;
-    }
+            .profile-name {
+                font-size: 1.6rem;
+            }
 
-    /* 預設提示文字 */
-    .placeholder-hint {
-      position: absolute;
-      color: rgba(255, 255, 255, 0.7);
-      font-weight: bold;
-      pointer-events: none;
-    }
-  </style>
+            .avatar-wrapper {
+                width: 100px;
+                height: 100px;
+            }
+        }
+    </style>
 </head>
 <body>
 
-  <!-- 頁頭標題 -->
-  <header>
-    <h1>★ USA MEME MAKER ★</h1>
-    <p>美式經典迷因產生器 - 快速製作你的原創梗圖！</p>
-  </header>
+    <div class="container">
+        <!-- 個人資訊區 -->
+        <div class="profile-section">
+            <div class="avatar-wrapper">
+                <div class="avatar-glow"></div>
+                <img src="https://i.postimg.cc/BQm7xS3C/unnamed.webp" alt="大頭貼" class="avatar">
+            </div>
+            <h1 class="profile-name">余冠毅</h1>
+            <p class="profile-title">網頁程式設計 | 學習作品集</p>
+            
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+            <p class="progress-text">學習進度：4 / 16 關卡已解鎖 (25%)</p>
+        </div>
 
-  <!-- 主內容容器 -->
-  <main class="container">
+        <!-- 16 個關卡按鈕網格 -->
+        <div class="grid-container">
+            
+            <!-- Week 1 (已解鎖) -->
+            <a href="w1/index.html" class="level-card unlocked">
+                <div class="card-header">
+                    <span class="badge">WEEK 01</span>
+                    <span class="status-icon">🚀</span>
+                </div>
+                <div class="card-title">Week 1 - 數位名片</div>
+            </a>
 
-    <!-- 左側：控制面板 -->
-    <section class="controls-panel">
-      <h2 class="panel-title">1. 設定底圖</h2>
-      
-      <!-- 本機圖片上傳按鈕 (使用 input type=file 防範 CORS) -->
-      <div class="file-upload-btn">
-        <span>📸 選擇電腦中的圖片...</span>
-        <input type="file" id="imageInput" accept="image/*">
-      </div>
+            <!-- Week 2 (已解鎖) -->
+            <a href="w2/index.html" class="level-card unlocked">
+                <div class="card-header">
+                    <span class="badge">WEEK 02</span>
+                    <span class="status-icon">🍕</span>
+                </div>
+                <div class="card-title">Week 2 - 今天吃甚麼？</div>
+            </a>
 
-      <h2 class="panel-title" style="margin-top: 10px;">2. 輸入文字與微調</h2>
+            <!-- Week 3 (已解鎖) -->
+            <a href="w3/index.html" class="level-card unlocked">
+                <div class="card-header">
+                    <span class="badge">WEEK 03</span>
+                    <span class="status-icon">🎭</span>
+                </div>
+                <div class="card-title">Week 3 - 迷因產生器</div>
+            </a>
 
-      <!-- 上方文字輸入框 -->
-      <div class="form-group">
-        <label for="topTextInput">上方文字 (Top Text)</label>
-        <input type="text" id="topTextInput" placeholder="輸入上方搞笑文字..." value="WHEN YOU FINALLY">
-      </div>
+            <!-- Week 4 (已解鎖) -->
+            <a href="w4/index.html" class="level-card unlocked">
+                <div class="card-header">
+                    <span class="badge">WEEK 04</span>
+                    <span class="status-icon">💬</span>
+                </div>
+                <div class="card-title">Week 4 - 悄悄話</div>
+            </a>
 
-      <!-- 下方文字輸入框 -->
-      <div class="form-group">
-        <label for="bottomTextInput">下方文字 (Bottom Text)</label>
-        <input type="text" id="bottomTextInput" placeholder="輸入下方搞笑文字..." value="FIX THE BUG AT 3 AM">
-      </div>
+            <!-- Week 5 ~ Week 16 (未解鎖狀態) -->
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 05</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
 
-      <!-- 字體大小滑桿 -->
-      <div class="form-group">
-        <label for="fontSizeSlider">
-          字體大小 (Font Size)
-          <span class="val-badge" id="fontSizeVal">36px</span>
-        </label>
-        <input type="range" id="fontSizeSlider" min="16" max="72" value="36">
-      </div>
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 06</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
 
-      <!-- 上方文字垂直位置滑桿 -->
-      <div class="form-group">
-        <label for="topPosSlider">
-          上方文字位置 (Top Pos)
-          <span class="val-badge" id="topPosVal">5%</span>
-        </label>
-        <input type="range" id="topPosSlider" min="0" max="40" value="5">
-      </div>
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 07</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
 
-      <!-- 下方文字垂直位置滑桿 -->
-      <div class="form-group">
-        <label for="bottomPosSlider">
-          下方文字位置 (Bottom Pos)
-          <span class="val-badge" id="bottomPosVal">5%</span>
-        </label>
-        <input type="range" id="bottomPosSlider" min="0" max="40" value="5">
-      </div>
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 08</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
 
-      <!-- 一鍵下載按鈕 -->
-      <button class="download-btn" id="downloadBtn">
-        🚀 一鍵下載迷因 (my-meme.png)
-      </button>
-    </section>
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 09</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
 
-    <!-- 右側：迷因即時預覽區 -->
-    <section class="preview-panel">
-      <!-- 被 html2canvas 截圖的目標區塊 -->
-      <div class="meme-canvas-wrapper" id="memeCanvas">
-        <!-- 預設迷因圖（使用 SVG base64 佔位圖，避免外連 CORS 錯誤） -->
-        <img id="memeImage" class="meme-image" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='400' viewBox='0 0 500 400'><rect width='100%' height='100%' fill='%23333333'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='20' font-weight='bold' fill='%23ffffff'>請點擊左側上傳照片</text></svg>" alt="迷因底圖">
-        
-        <!-- 即時上方文字 -->
-        <div id="memeTopText" class="meme-text meme-text-top">WHEN YOU FINALLY</div>
-        
-        <!-- 即時下方文字 -->
-        <div id="memeBottomText" class="meme-text meme-text-bottom">FIX THE BUG AT 3 AM</div>
-      </div>
-    </section>
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 10</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
 
-  </main>
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 11</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
 
-  <!-- ==========================================
-       JavaScript 邏輯區
-       ========================================== -->
-  <script>
-    // 1. 取得 DOM 元素引用
-    const imageInput = document.getElementById('imageInput');
-    const memeImage = document.getElementById('memeImage');
-    
-    const topTextInput = document.getElementById('topTextInput');
-    const bottomTextInput = document.getElementById('bottomTextInput');
-    const memeTopText = document.getElementById('memeTopText');
-    const memeBottomText = document.getElementById('memeBottomText');
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 12</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
 
-    const fontSizeSlider = document.getElementById('fontSizeSlider');
-    const fontSizeVal = document.getElementById('fontSizeVal');
-    
-    const topPosSlider = document.getElementById('topPosSlider');
-    const topPosVal = document.getElementById('topPosVal');
-    
-    const bottomPosSlider = document.getElementById('bottomPosSlider');
-    const bottomPosVal = document.getElementById('bottomPosVal');
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 13</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
 
-    const downloadBtn = document.getElementById('downloadBtn');
-    const memeCanvas = document.getElementById('memeCanvas');
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 14</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
 
-    // 2. 本機圖片讀取處理 (FileReader 防範 CORS)
-    imageInput.addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        // 使用 FileReader 將使用者檔案轉為 Base64 Data URL
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          memeImage.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 15</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
 
-    // 3. 上下文字即時同步 (Input 事件)
-    topTextInput.addEventListener('input', function() {
-      memeTopText.innerText = this.value;
-    });
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 16</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
 
-    bottomTextInput.addEventListener('input', function() {
-      memeBottomText.innerText = this.value;
-    });
+        </div>
+    </div>
 
-    // 4. 滑桿微調控制 (字體大小 & 上下垂直位置)
-    fontSizeSlider.addEventListener('input', function() {
-      const size = this.value + 'px';
-      memeTopText.style.fontSize = size;
-      memeBottomText.style.fontSize = size;
-      fontSizeVal.innerText = size;
-    });
-
-    topPosSlider.addEventListener('input', function() {
-      const pos = this.value + '%';
-      memeTopText.style.top = pos;
-      topPosVal.innerText = pos;
-    });
-
-    bottomPosSlider.addEventListener('input', function() {
-      const pos = this.value + '%';
-      memeBottomText.style.bottom = pos;
-      bottomPosVal.innerText = pos;
-    });
-
-    // 初始化字體大小
-    memeTopText.style.fontSize = fontSizeSlider.value + 'px';
-    memeBottomText.style.fontSize = fontSizeSlider.value + 'px';
-
-    // 5. 使用 html2canvas 一鍵截圖下載功能
-    downloadBtn.addEventListener('click', function() {
-      // 顯示下載處理中的提示
-      const originalBtnText = downloadBtn.innerHTML;
-      downloadBtn.innerHTML = '⏳ 產生圖檔中...';
-      downloadBtn.style.pointerEvents = 'none';
-
-      // 呼叫 html2canvas 繪製 preview 區塊
-      html2canvas(memeCanvas, {
-        scale: 2,           // 2倍解析度，確保圖片高清不模糊
-        useCORS: true,      // 允許跨域圖片（若有）
-        allowTaint: true,
-        backgroundColor: null
-      }).then(canvas => {
-        // 將 Canvas 轉為圖片 Data URL
-        const imageURL = canvas.toDataURL('image/png');
-
-        // 建立隱藏的 <a> 標籤觸發下載
-        const link = document.createElement('a');
-        link.download = 'my-meme.png'; // 依要求設定檔名為 my-meme.png
-        link.href = imageURL;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        // 恢復按鈕狀態
-        downloadBtn.innerHTML = originalBtnText;
-        downloadBtn.style.pointerEvents = 'auto';
-      }).catch(err => {
-        console.error('截圖失敗:', err);
-        alert('下載圖片時發生錯誤，請重試！');
-        downloadBtn.innerHTML = originalBtnText;
-        downloadBtn.style.pointerEvents = 'auto';
-      });
-    });
-  </script>
 </body>
 </html>
