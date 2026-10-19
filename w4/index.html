@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Friends' Messages - 美式動態留言板</title>
+
+  <!-- 引入美式 Pop-Art / Comic 風格字型 (Bungee & Noto Sans TC) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       1. 全局樣式與 CSS 變數設定
+       ========================================================================== */
+    :root {
+      --bg-color: #0d0f18;             /* 全局深色底色 (深邃夜空黑藍) */
+      --primary-yellow: #facc15;       /* 美式亮黃色 (主題亮點) */
+      --primary-red: #ff2a5f;          /* 霓虹亮紅色 (撞色邊框與陰影) */
+      --primary-cyan: #00f0ff;         /* 霓虹青藍色 (標題與細節) */
+      --card-bg: #1a1d2e;              /* 留言卡片背景色 */
+      --text-main: #f8fafc;            /* 主要內文顏色 (白) */
+      --text-sub: #94a3b8;             /* 時間戳記與輔助文字顏色 (灰) */
+
+      --highlight-glow: 0 0 30px rgba(0, 240, 255, 0.8), 8px 8px 0px var(--primary-red);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      background-image: radial-gradient(#2a2e45 15%, transparent 16%);
+      background-size: 24px 24px;
+      color: var(--text-main);
+      font-family: 'Noto Sans TC', sans-serif;
+      min-height: 100vh;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* ==========================================================================
+       2. 美式 Header 標題區塊
+       ========================================================================== */
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .main-title {
+      font-family: 'Bungee', cursive, 'Noto Sans TC', sans-serif;
+      font-size: 3.2rem;
+      color: var(--primary-yellow);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 
+        4px 4px 0px var(--primary-red),
+        8px 8px 0px #000000;
+      transform: rotate(-2deg);
+      margin-bottom: 12px;
+    }
+
+    .sub-title {
+      font-size: 1.1rem;
+      color: var(--primary-cyan);
+      font-weight: 900;
+      background: #000000;
+      display: inline-block;
+      padding: 6px 18px;
+      border: 2px solid var(--primary-cyan);
+      box-shadow: 4px 4px 0px var(--primary-yellow);
+      transform: rotate(1deg);
+    }
+
+    /* ==========================================================================
+       3. 載入中酷炫動畫 (Loading Animation)
+       ========================================================================== */
+    #loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: 80px;
+    }
+
+    .loader-box {
+      font-family: 'Bungee', cursive, 'Noto Sans TC', sans-serif;
+      font-size: 1.5rem;
+      color: var(--primary-yellow);
+      background: #000000;
+      padding: 20px 35px;
+      border: 4px solid var(--primary-yellow);
+      box-shadow: 8px 8px 0px var(--primary-red);
+      animation: pulse-loading 1s infinite alternate cubic-bezier(0.4, 0, 0.6, 1);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    @keyframes pulse-loading {
+      0% {
+        transform: scale(0.96);
+        box-shadow: 4px 4px 0px var(--primary-red);
+      }
+      100% {
+        transform: scale(1.04);
+        box-shadow: 12px 12px 0px var(--primary-cyan);
+      }
+    }
+
+    /* ==========================================================================
+       4. 瀑布流牆面 (Masonry Layout)
+       ========================================================================== */
+    .wall-container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+
+      column-count: 3;       /* 預設顯示 3 欄 */
+      column-gap: 25px;      /* 卡片左右間距 */
+      display: none;         /* 載入完成前隱藏 */
+    }
+
+    @media (max-width: 900px) {
+      .wall-container { column-count: 2; }
+      .main-title { font-size: 2.3rem; }
+    }
+    @media (max-width: 600px) {
+      .wall-container { column-count: 1; }
+      .main-title { font-size: 1.8rem; }
+    }
+
+    /* ==========================================================================
+       5. 留言卡片與 Highlight 展覽特效
+       ========================================================================== */
+    .card {
+      background-color: var(--card-bg);
+      border: 3px solid #000000;
+      border-radius: 12px;
+      padding: 22px;
+      margin-bottom: 25px;
+      break-inside: avoid;
+      box-shadow: 6px 6px 0px #000000;
+      
+      transition: 
+        transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+        opacity 0.5s ease,
+        filter 0.5s ease,
+        box-shadow 0.5s ease,
+        border-color 0.5s ease;
+      
+      position: relative;
+      cursor: pointer;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      color: #ffffff;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #000000;
+      font-size: 1.2rem;
+      box-shadow: 2px 2px 0px #000000;
+      flex-shrink: 0;
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-name {
+      font-weight: 900;
+      font-size: 1.15rem;
+      color: var(--primary-yellow);
+      letter-spacing: 0.5px;
+      word-break: break-word;
+    }
+
+    .time-stamp {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .card-body {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--text-main);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* 被選中的 Highlight 卡片 */
+    .card.highlight {
+      transform: scale(1.08);
+      border-color: var(--primary-cyan);
+      box-shadow: var(--highlight-glow);
+      opacity: 1 !important;
+      filter: blur(0px) !important;
+      z-index: 10;
+    }
+
+    /* 未選中的卡片稍微變暗與模糊 */
+    .wall-container.has-highlight .card:not(.highlight) {
+      opacity: 0.35;
+      filter: blur(2px) grayscale(30%);
+      transform: scale(0.96);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 頁頭標題 -->
+  <header>
+    <h1 class="main-title">WHAT FRIENDS SAY!</h1>
+    <div class="sub-title">★ 朋友對我的動態留言牆 ★</div>
+  </header>
+
+  <!-- 載入中動畫提示 -->
+  <div id="loading">
+    <div class="loader-box">
+      讀取留言中...
+    </div>
+  </div>
+
+  <!-- 瀑布流卡片牆 Container -->
+  <main class="wall-container" id="wall"></main>
+
+  <script>
+    /* ==========================================================================
+       6. JavaScript 核心邏輯
+       ========================================================================== */
+
+    // ⏱️ 輪播時間隔 (3000ms = 3 秒)
+    const CAROUSEL_INTERVAL = 3000; 
+
+    // 🔗 您的 Google 試算表 CSV 網址
+    const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRx2Yewnh9MJCZqNH_U4MKjzZxhWv7DKqUQpK1Xr5HBwfNdY1SYUdTS1nwRj2NpWxz9I0rH80oy9Y-V/pub?output=csv';
+
+    // 🎨 頭像隨機背景顏色池
+    const avatarColors = ['#ff2a5f', '#00f0ff', '#9d4edd', '#00f5d4', '#ff9e00', '#facc15'];
+
+    let messagesData = [];
+    let currentIndex = 0;
+    let carouselTimer = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchMessages();
+    });
+
+    /**
+     * 抓取 Google 試算表資料
+     */
+    async function fetchMessages() {
+      try {
+        const response = await fetch(CSV_URL);
+        if (!response.ok) throw new Error(`HTTP 錯誤：${response.status}`);
+
+        const csvText = await response.text();
+        
+        // 解析 CSV
+        messagesData = parseCSV(csvText);
+
+        if (messagesData.length === 0) {
+          document.getElementById('loading').innerHTML = `
+            <div class="loader-box" style="border-color: var(--primary-yellow); color: var(--primary-yellow);">
+              目前試算表中還沒有任何留言喔！
+            </div>
+          `;
+          return;
+        }
+
+        // 渲染卡片
+        renderCards(messagesData);
+
+        // 隱藏 Loading，顯示留言牆
+        document.getElementById('loading').style.display = 'none';
+        const wall = document.getElementById('wall');
+        wall.style.display = 'block';
+
+        // 啟動輪播
+        wall.classList.add('has-highlight');
+        startCarousel();
+
+      } catch (error) {
+        console.error('抓取留言失敗:', error);
+        document.getElementById('loading').innerHTML = `
+          <div class="loader-box" style="border-color: var(--primary-red); color: var(--primary-red); font-size: 1.1rem;">
+            讀取失敗！請檢查試算表權限<br>
+            <span style="font-size:0.85rem; color:#94a3b8; font-weight:normal;">(${error.message})</span>
+          </div>
+        `;
+      }
+    }
+
+    /**
+     * 重寫並修正後的 CSV 解析器 (能正確處理雙引號、逗號與換行)
+     */
+    function parseCSV(text) {
+      const rows = [];
+      let currentRow = [];
+      let currentField = '';
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const nextChar = text[i + 1];
+
+        if (char === '"') {
+          if (inQuotes && nextChar === '"') {
+            currentField += '"';
+            i++; // 跳過轉義的雙引號
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (char === ',' && !inQuotes) {
+          currentRow.push(currentField);
+          currentField = '';
+        } else if ((char === '\r' || char === '\n') && !inQuotes) {
+          if (char === '\r' && nextChar === '\n') {
+            i++; // 跳過 \r\n 中的 \n
+          }
+          currentRow.push(currentField);
+          if (currentRow.some(field => field.trim() !== '')) {
+            rows.push(currentRow);
+          }
+          currentRow = [];
+          currentField = '';
+        } else {
+          currentField += char;
+        }
+      }
+
+      if (currentField !== '' || currentRow.length > 0) {
+        currentRow.push(currentField);
+        if (currentRow.some(field => field.trim() !== '')) {
+          rows.push(currentRow);
+        }
+      }
+
+      // 如果第一列包含「時間」或「Timestamp」，自動過濾掉標題列
+      if (rows.length > 0 && rows[0][0] && (rows[0][0].includes('時間') || rows[0][0].toLowerCase().includes('timestamp'))) {
+        rows.shift();
+      }
+
+      // 轉換成 JSON 物件陣列
+      return rows.map(cols => ({
+        timestamp: cols[0] ? cols[0].trim() : '',
+        name: cols[1] ? cols[1].trim() : '神祕朋友',
+        message: cols[2] ? cols[2].trim() : ''
+      }));
+    }
+
+    /**
+     * 動態生成留言卡片
+     */
+    function renderCards(data) {
+      const wallContainer = document.getElementById('wall');
+      wallContainer.innerHTML = '';
+
+      data.forEach((item, index) => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.index = index;
+
+        const bg = avatarColors[index % avatarColors.length];
+        const firstChar = item.name.charAt(0).toUpperCase();
+
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="avatar" style="background-color: ${bg};">${firstChar}</div>
+            <div class="user-info">
+              <span class="user-name">${escapeHTML(item.name)}</span>
+              <span class="time-stamp">${escapeHTML(item.timestamp)}</span>
+            </div>
+          </div>
+          <div class="card-body">${escapeHTML(item.message)}</div>
+        `;
+
+        card.addEventListener('click', () => {
+          currentIndex = index;
+          highlightCard(currentIndex);
+          resetCarouselTimer();
+        });
+
+        wallContainer.appendChild(card);
+      });
+    }
+
+    /**
+     * 高亮指定索引的卡片
+     */
+    function highlightCard(index) {
+      const cards = document.querySelectorAll('.card');
+      if (cards.length === 0) return;
+
+      cards.forEach(card => card.classList.remove('highlight'));
+
+      const targetCard = cards[index];
+      if (targetCard) {
+        targetCard.classList.add('highlight');
+        targetCard.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest'
+        });
+      }
+    }
+
+    /**
+     * 開始自動輪播
+     */
+    function startCarousel() {
+      highlightCard(currentIndex);
+      carouselTimer = setInterval(() => {
+        currentIndex = (currentIndex + 1) % messagesData.length;
+        highlightCard(currentIndex);
+      }, CAROUSEL_INTERVAL);
+    }
+
+    /**
+     * 重置輪播計時器
+     */
+    function resetCarouselTimer() {
+      if (carouselTimer) clearInterval(carouselTimer);
+      carouselTimer = setInterval(() => {
+        currentIndex = (currentIndex + 1) % messagesData.length;
+        highlightCard(currentIndex);
+      }, CAROUSEL_INTERVAL);
+    }
+
+    /**
+     * 防止 XSS 攻擊
+     */
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          "'": '&#39;',
+          '"': '&quot;'
+        }[tag] || tag)
+      );
+    }
+  </script>
+</body>
+</html>
