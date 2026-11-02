@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人數位名片</title>
+    <!-- 引入 FontAwesome 圖示庫 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+   
+    <!-- ==================== 1. CSS 樣式區塊 ==================== -->
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 360px;
+            padding: 30px 24px;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #ffffff;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 12px;
+        }
+
+        .name {
+            font-size: 1.4rem;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+
+        .title {
+            font-size: 0.9rem;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .bio {
+            font-size: 0.85rem;
+            color: #4a5568;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        /* 互動按鈕樣式 */
+        .copy-btn {
+            background: #edf2f7;
+            color: #2d3748;
+            border: none;
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #e2e8f0;
+        }
+
+        /* 社群連結 */
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .social-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+
+        .social-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        /* JavaScript 複製成功的提示訊息 */
+        .toast {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #323232;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-10px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== 2. HTML 結構區塊 ==================== -->
+    <div class="card">
+        <!-- 👈【修改處】：更換頭像網址 -->
+        <img class="avatar" src="https://i.postimg.cc/3N226THV/IMG-2188.avif" alt="頭像">
+
+        <!-- 👈【修改處】：姓名與職稱 -->
+        <h1 class="name">歐廷耀</h1>
+        <p class="title">排球隊隊員</p>
+       
+        <!-- 👈【修改處】：個人簡介 -->
+        <p class="bio">熱愛排球 大I人。</p>
+
+        <!-- Email 複製按鈕 (結合 JS 功能) -->
+        <button class="copy-btn" onclick="copyEmail('xiaoming@example.com')">
+            <i class="fa-regular fa-copy"></i>
+            <span id="email-text">tingyaoou173@gmail.com</span>
+        </button>
+
+        <!-- 👈【修改處】：社群網站連結 -->
+        <div class="social-links">
+            <a href="https://github.com" class="social-btn" target="_blank"><i class="fa-brands fa-github"></i></a>
+            <a href="https://linkedin.com" class="social-btn" target="_blank"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="https://instagram.com" class="social-btn" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+        </div>
+
+        <!-- 複製提示浮窗 -->
+        <div id="toast" class="toast">已複製 Email 到剪貼簿！</div>
+    </div>
+
+    <!-- ==================== 3. JavaScript 邏輯區塊 ==================== -->
+    <script>
+        function copyEmail(email) {
+            // 複製文字到剪貼簿
+            navigator.clipboard.writeText(email).then(() => {
+                // 顯示「已複製」提示訊息
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+               
+                // 1.5 秒後自動隱藏提示
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 1500);
+            }).catch(err => {
+                console.error('複製失敗:', err);
+            });
+        }
+    </script>
+</body>
+</html>
