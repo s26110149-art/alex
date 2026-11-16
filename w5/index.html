@@ -1,495 +1,458 @@
-html_content = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>雲端心電感應 | Telepathy Game</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            notion: {
-              bg: '#F7F6F3',
-              card: '#FFFFFF',
-              border: '#E3E2E0',
-              text: '#37352F',
-              subtext: '#787774',
-              hover: '#EFEFEF'
-            },
-            morandi: {
-              sage: '#8A9A86',       /* 鼠尾草綠 */
-              dusty: '#7D8CC4',      /* 霧藍 */
-              terracotta: '#C88D79', /* 陶土粉 */
-              taupe: '#A39185',      /* 灰褐 */
-              sand: '#E6E2DD',       /* 沙灰 */
-              accent: '#E0A96D'      /* 醒目暖橘 */
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>網頁程式課程作品集 | Level Select</title>
+    <style>
+        /* ==========================================
+           1. 全局樣式與變數設定 (CSS Variables)
+           ========================================== */
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(22, 27, 46, 0.7);
+            --border-color: rgba(0, 240, 255, 0.2);
+            --primary-neon: #00f0ff;
+            --secondary-neon: #7000ff;
+            --locked-color: #3a415a;
+            --text-main: #f0f4f8;
+            --text-sub: #8a99ad;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(112, 0, 255, 0.15) 0%, transparent 60%),
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            color: var(--text-main);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ==========================================
+           2. 個人資訊區 (Header Profile)
+           ========================================== */
+        .profile-section {
+            text-align: center;
+            margin-bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 大頭貼與發光光暈 */
+        .avatar-wrapper {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            margin-bottom: 20px;
+        }
+
+        .avatar-glow {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary-neon), var(--secondary-neon));
+            filter: blur(12px);
+            opacity: 0.8;
+            animation: pulse-glow 3s infinite alternate;
+        }
+
+        .avatar {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid var(--primary-neon);
+            object-fit: cover;
+            background-color: #121829;
+        }
+
+        .profile-name {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #ffffff, var(--primary-neon));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+
+        .profile-title {
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        /* 遊戲進度條 */
+        .progress-container {
+            width: 240px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-bar {
+            height: 8px;
+            width: 31.25%; /* 5/16 = 31.25% */
+            background: linear-gradient(90deg, var(--secondary-neon), var(--primary-neon));
+            border-radius: 20px;
+            box-shadow: 0 0 10px var(--primary-neon);
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            margin-top: 6px;
+        }
+
+        /* ==========================================
+           3. 關卡網格與按鈕 (Grid & Level Cards)
+           ========================================== */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
+
+        .level-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px 15px;
+            text-decoration: none;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 120px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* 已解鎖按鈕 Hover 效果 */
+        .level-card.unlocked:hover {
+            transform: translateY(-5px) scale(1.02);
+            border-color: var(--primary-neon);
+            box-shadow: 0 8px 25px rgba(0, 240, 255, 0.25),
+                        inset 0 0 15px rgba(0, 240, 255, 0.1);
+        }
+
+        /* 光影劃過 (Shimmer Animation) */
+        .level-card.unlocked::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(255, 255, 255, 0.05),
+                transparent
+            );
+            transform: rotate(45deg) translateY(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .level-card.unlocked:hover::before {
+            transform: rotate(45deg) translateY(100%);
+        }
+
+        /* 未解鎖按鈕樣式 */
+        .level-card.locked {
+            background: rgba(15, 20, 32, 0.5);
+            border-color: rgba(255, 255, 255, 0.05);
+            color: var(--locked-color);
+            cursor: not-allowed;
+            filter: grayscale(80%);
+        }
+
+        .level-card.locked:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 卡片內部元素 */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 1px;
+        }
+
+        .unlocked .badge {
+            background: rgba(0, 240, 255, 0.15);
+            color: var(--primary-neon);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+        }
+
+        .locked .badge {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--locked-color);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .lock-icon {
+            font-size: 1.1rem;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.4;
+            transition: color 0.3s ease;
+        }
+
+        .unlocked:hover .card-title {
+            color: var(--primary-neon);
+        }
+
+        .locked .card-title {
+            color: var(--locked-color);
+        }
+
+        /* ==========================================
+           4. 動畫效果 (Animations)
+           ========================================== */
+        @keyframes pulse-glow {
+            0% {
+                transform: scale(0.98);
+                opacity: 0.6;
             }
-          }
+            100% {
+                transform: scale(1.03);
+                opacity: 0.9;
+            }
         }
-      }
-    }
-  </script>
-  <style>
-    /* 3D 卡片翻轉動畫效果 */
-    .perspective-1000 {
-      perspective: 1000px;
-    }
-    .card-inner {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-      transform-style: preserve-3d;
-    }
-    .card-inner.flipped {
-      transform: rotateY(180deg);
-    }
-    .card-front, .card-back {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      -webkit-backface-visibility: hidden;
-      backface-visibility: hidden;
-      border-radius: 0.75rem;
-      top: 0;
-      left: 0;
-    }
-    .card-back {
-      transform: rotateY(180deg);
-    }
-  </style>
+
+        /* ==========================================
+           5. 響應式佈局 (Responsive Design)
+           ========================================== */
+        @media (max-width: 850px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 20px 15px;
+            }
+
+            .grid-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .profile-name {
+                font-size: 1.6rem;
+            }
+
+            .avatar-wrapper {
+                width: 100px;
+                height: 100px;
+            }
+        }
+    </style>
 </head>
-<body class="bg-notion-bg text-notion-text font-sans min-h-screen flex flex-col justify-between selection:bg-morandi-sand">
+<body>
 
-  <!-- 頂部導覽列 -->
-  <header class="border-b border-notion-border bg-white px-4 sm:px-6 py-4 shadow-sm flex flex-wrap justify-between items-center gap-3">
-    <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-xl bg-morandi-sage text-white font-bold flex items-center justify-center text-xl shadow-sm">🧠</div>
-      <div>
-        <h1 class="font-bold text-lg leading-tight tracking-tight text-notion-text">雲端心電感應</h1>
-        <p class="text-xs text-notion-subtext">Multiplayer Tacit Understanding Game</p>
-      </div>
-    </div>
-    
-    <!-- 房間資訊與醒目的隱藏房主切換鈕 -->
-    <div id="nav-info" class="hidden flex items-center gap-2 sm:gap-3 text-sm">
-      <!-- 醒目的房號標籤 -->
-      <div class="flex items-center bg-morandi-sage/15 border-2 border-morandi-sage px-3 py-1.5 rounded-lg text-morandi-sage font-mono font-bold shadow-sm">
-        <span class="text-xs mr-1 text-notion-subtext">📍 房號:</span>
-        <span id="display-room-code" class="text-base text-morandi-sage">----</span>
-      </div>
-
-      <!-- 玩家名稱 -->
-      <span class="px-3 py-1.5 bg-notion-bg border border-notion-border rounded-lg text-xs font-semibold text-notion-text" id="display-player-name">
-        👤 玩家: -
-      </span>
-      
-      <!-- 醒目的隱藏房主開關按鈕 -->
-      <button onclick="toggleHostMode()" id="btn-host-toggle" title="點擊切換/隱藏房主控制台" 
-              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-notion-border bg-notion-bg text-notion-subtext hover:bg-notion-hover font-medium text-xs transition-all shadow-sm">
-        <span>🔑</span>
-        <span id="text-host-toggle">開啟房主</span>
-      </button>
-    </div>
-  </header>
-
-  <!-- 主要內容區 -->
-  <main class="max-w-4xl w-full mx-auto p-4 sm:p-6 flex-grow flex flex-col justify-center">
-
-    <!-- 步驟 1: 大廳 / 登入與建房 -->
-    <section id="view-lobby" class="bg-white border border-notion-border rounded-2xl p-6 sm:p-8 shadow-md max-w-md mx-auto w-full">
-      <div class="text-center mb-6">
-        <div class="inline-block px-3 py-1 rounded-full bg-morandi-sage/10 text-morandi-sage text-xs font-bold mb-2">
-          ✨ 多人連線默契考驗
-        </div>
-        <h2 class="text-2xl font-bold text-notion-text mb-1">加入或創建房間</h2>
-        <p class="text-xs text-notion-subtext">輸入相同房號即可與同學連線作答</p>
-      </div>
-
-      <form onsubmit="handleJoin(event)" class="space-y-5">
-        <div>
-          <div class="flex justify-between items-center mb-1">
-            <label class="block text-xs font-bold text-notion-text">房間代碼 (Room Code)</label>
-            <button type="button" onclick="generateRandomRoom()" class="text-xs text-morandi-dusty hover:underline font-medium flex items-center gap-1">
-              🎲 自動產生隨機房號
-            </button>
-          </div>
-          <input type="text" id="input-room" required placeholder="例如: 888 或 Game1" 
-                 class="w-full px-3.5 py-2.5 border-2 border-notion-border rounded-xl focus:outline-none focus:border-morandi-sage font-mono text-base tracking-wider transition">
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-notion-text mb-1">您的暱稱 (Player Name)</label>
-          <input type="text" id="input-name" required placeholder="例如: 小明 / Alice" 
-                 class="w-full px-3.5 py-2.5 border-2 border-notion-border rounded-xl focus:outline-none focus:border-morandi-sage transition">
-        </div>
-
-        <div class="p-3 bg-morandi-sand/30 border border-morandi-taupe/20 rounded-xl">
-          <label class="flex items-center gap-2.5 text-xs font-medium text-notion-text cursor-pointer selection:bg-none">
-            <input type="checkbox" id="input-is-host" class="w-4 h-4 rounded border-notion-border text-morandi-sage focus:ring-morandi-sage">
-            <span>我是本局房主 (開啟房主控制權限)</span>
-          </label>
-        </div>
-
-        <button type="submit" 
-                class="w-full py-3 bg-morandi-sage hover:bg-opacity-90 text-white font-bold rounded-xl shadow-md transition text-base flex items-center justify-center gap-2">
-          <span>進入遊戲房間</span>
-          <span>➔</span>
-        </button>
-      </form>
-    </section>
-
-    <!-- 步驟 2: 遊戲主畫面 -->
-    <section id="view-game" class="hidden space-y-6">
-
-      <!-- 醒目的房主控制台 (可被隱藏) -->
-      <div id="host-panel" class="hidden bg-amber-50/80 border-2 border-morandi-terracotta rounded-2xl p-5 shadow-sm transition">
-        <div class="flex items-center justify-between mb-3 border-b border-morandi-terracotta/20 pb-2">
-          <span class="text-xs font-bold tracking-wider text-morandi-terracotta flex items-center gap-1.5">
-            <span class="px-2 py-0.5 rounded bg-morandi-terracotta text-white font-bold">房主管理</span>
-            <span>🔑 房主專屬控制台</span>
-          </span>
-          <span class="text-xs text-notion-subtext bg-white px-2 py-0.5 rounded border border-notion-border">
-            全網頁即時狀態同步中 ⚡
-          </span>
-        </div>
-
-        <!-- 狀態: 出題階段 -->
-        <div id="host-controls-setup" class="space-y-3">
-          <label class="block text-xs font-bold text-notion-text">設定本局題目：</label>
-          <div class="flex gap-2">
-            <input type="text" id="input-question" placeholder="輸入題目 (例如: 提到夏天最先想到什麼？)" 
-                   class="flex-1 px-3.5 py-2 border border-notion-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-morandi-sage bg-white">
-            <button onclick="setQuestion()" class="px-5 py-2 bg-morandi-sage text-white text-sm font-bold rounded-xl hover:opacity-90 shadow-sm transition whitespace-nowrap">
-              發布題目 📢
-            </button>
-          </div>
-        </div>
-
-        <!-- 狀態: 進行中與開牌按鈕 -->
-        <div id="host-controls-playing" class="hidden flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
-          <span class="text-xs font-medium text-notion-subtext">
-            💡 等待全體玩家填答後，點擊下方按鈕觸發全網頁 3D 翻牌動畫！
-          </span>
-          <div class="flex gap-2 w-full sm:w-auto">
-            <button onclick="resetGame()" class="flex-1 sm:flex-none px-3.5 py-2 border border-notion-border bg-white text-notion-subtext text-xs font-medium rounded-xl hover:bg-notion-hover transition">
-              🔄 重置本局
-            </button>
-            <button onclick="revealAnswers()" class="flex-1 sm:flex-none px-5 py-2 bg-morandi-terracotta text-white text-sm font-bold rounded-xl hover:opacity-90 shadow-md transition">
-              ✨ 揭曉答案 (開牌)
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- 題目顯示區 -->
-      <div class="bg-white border-2 border-notion-border rounded-2xl p-6 shadow-sm text-center relative overflow-hidden">
-        <span class="text-xs font-bold px-3 py-1 rounded-full bg-notion-bg text-notion-subtext border border-notion-border inline-block mb-3" id="status-badge">
-          等待房主出題...
-        </span>
-        <h2 id="display-question" class="text-xl sm:text-2xl font-bold text-notion-text tracking-tight min-h-[40px] flex items-center justify-center">
-          題目將在此顯示
-        </h2>
-      </div>
-
-      <!-- 玩家答題區 (優化 UX: 永遠呈現，並依據遊戲狀態自動開關輸入框與提示) -->
-      <div id="player-input-section" class="bg-white border border-notion-border rounded-2xl p-5 shadow-sm">
-        <form onsubmit="submitAnswer(event)" class="flex gap-2">
-          <input type="text" id="input-answer" required placeholder="寫下你的心電感應答案..." 
-                 class="flex-1 px-3.5 py-2.5 border border-notion-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-morandi-dusty disabled:bg-notion-bg disabled:cursor-not-allowed">
-          <button type="submit" id="btn-submit-answer" 
-                  class="px-6 py-2.5 bg-morandi-dusty text-white text-sm font-bold rounded-xl hover:opacity-90 shadow-sm transition whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed">
-            送出答案 🚀
-          </button>
-        </form>
-      </div>
-
-      <!-- 3D 翻牌展示區 ( Cards Grid ) -->
-      <div>
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-base font-bold text-notion-text flex items-center gap-2">
-            <span>🃏 全員回答卡片</span>
-          </h3>
-          <span class="text-xs font-bold px-2.5 py-1 bg-morandi-sand rounded-lg text-notion-text" id="submitted-count">
-            已提交: 0 人
-          </span>
-        </div>
-        
-        <div id="cards-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          <!-- 3D 動態卡片將渲染在此 -->
-        </div>
-      </div>
-
-    </section>
-
-  </main>
-
-  <!-- 頁尾 -->
-  <footer class="border-t border-notion-border bg-white py-3 text-center text-xs text-notion-subtext">
-    雲端心電感應 &copy; 2026 | Notion Style & Morandi Palette
-  </footer>
-
-  <!-- JavaScript 邏輯區 -->
-  <script>
-    // 常數設定 (與 GAS 試算表名稱對應)
-    const SHEET_NAME = 'TelepathyData';
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwtMngdtNdYfzaaoT-2o5r_Jem8vJ644YAoQW1okX7JtFK1AtvRGf49UG5ohSS-Di5m/exec";
-    
-    // 全域狀態
-    let roomCode = '';
-    let playerName = '';
-    let isHost = false;
-    let pollingInterval = null;
-    let currentGameState = { status: 'setup', question: '', answers: {} };
-
-    // 0. 隨機房號生成器
-    function generateRandomRoom() {
-      const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
-      document.getElementById('input-room').value = randomCode;
-    }
-
-    // 1. 處理加入房間
-    function handleJoin(e) {
-      e.preventDefault();
-      roomCode = document.getElementById('input-room').value.trim();
-      playerName = document.getElementById('input-name').value.trim();
-      isHost = document.getElementById('input-is-host').checked;
-
-      if (!roomCode || !playerName) return;
-
-      // 更新 Header UI
-      document.getElementById('display-room-code').innerText = roomCode;
-      document.getElementById('display-player-name').innerText = `👤 玩家: ${playerName}`;
-      document.getElementById('nav-info').classList.remove('hidden');
-
-      // 切換畫面
-      document.getElementById('view-lobby').classList.add('hidden');
-      document.getElementById('view-game').classList.remove('hidden');
-
-      updateHostPanelVisibility();
-
-      // 啟動輪詢機制 (每 2 秒抓取一次最新資料)
-      fetchGameState();
-      if (pollingInterval) clearInterval(pollingInterval);
-      pollingInterval = setInterval(fetchGameState, 2000);
-    }
-
-    // 2. 切換/隱藏 房主控制台
-    function toggleHostMode() {
-      isHost = !isHost;
-      updateHostPanelVisibility();
-    }
-
-    function updateHostPanelVisibility() {
-      const hostPanel = document.getElementById('host-panel');
-      const btnHostToggle = document.getElementById('btn-host-toggle');
-      const textHostToggle = document.getElementById('text-host-toggle');
-
-      if (isHost) {
-        hostPanel.classList.remove('hidden');
-        btnHostToggle.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 border-morandi-terracotta bg-morandi-terracotta text-white font-bold text-xs shadow-sm transition-all";
-        textHostToggle.innerText = "房主選單 (開)";
-      } else {
-        hostPanel.classList.add('hidden');
-        btnHostToggle.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-notion-border bg-notion-bg text-notion-subtext hover:bg-notion-hover font-medium text-xs transition-all";
-        textHostToggle.innerText = "開啟房主";
-      }
-    }
-
-    // 3. API 溝通 - 抓取資料 (GET)
-    async function fetchGameState() {
-      if (!roomCode) return;
-      try {
-        const response = await fetch(`${GAS_API_URL}?room=${encodeURIComponent(roomCode)}`);
-        const data = await response.json();
-        renderGame(data);
-      } catch (err) {
-        console.error("Fetch state error:", err);
-      }
-    }
-
-    // 4. API 溝通 - 發送操作 (POST，包含跨域優化與寫入延遲延後刷新)
-    async function postAction(payload) {
-      try {
-        await fetch(GAS_API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ room: roomCode, ...payload })
-        });
-        
-        // 延遲 500ms 抓取最新狀態，讓 GAS 試算表確實寫入完成
-        setTimeout(fetchGameState, 500);
-      } catch (err) {
-        console.error("Post action error:", err);
-        alert("資料傳送失敗！請檢查 GAS 部署權限是否設為「任何人 (Anyone)」，且試算表頁籤名稱為「TelepathyData」。");
-      }
-    }
-
-    // 5. 房主操作：發布題目
-    function setQuestion() {
-      const q = document.getElementById('input-question').value.trim();
-      if (!q) return alert("請輸入題目！");
-      postAction({ action: 'set_question', question: q });
-    }
-
-    // 6. 玩家操作：提交答案 (優化按鈕狀態)
-    function submitAnswer(e) {
-      e.preventDefault();
-      const ansInput = document.getElementById('input-answer');
-      const btn = document.getElementById('btn-submit-answer');
-      const ans = ansInput.value.trim();
-      
-      if (!ans) return;
-      
-      btn.disabled = true;
-      btn.innerText = '傳送中... ⏳';
-      
-      postAction({ action: 'submit_answer', playerName: playerName, answer: ans });
-      
-      setTimeout(() => {
-        btn.classList.add('opacity-50');
-        btn.innerText = '已送出 ✔';
-        btn.disabled = false;
-      }, 600);
-    }
-
-    // 7. 房主操作：揭曉答案 (開牌)
-    function revealAnswers() {
-      postAction({ action: 'reveal' });
-    }
-
-    // 8. 房主操作：重置房間
-    function resetGame() {
-      if (!confirm("確定要重置本局題目與回答嗎？")) return;
-      document.getElementById('input-question').value = '';
-      document.getElementById('input-answer').value = '';
-      const btn = document.getElementById('btn-submit-answer');
-      btn.classList.remove('opacity-50');
-      btn.innerText = '送出答案 🚀';
-      btn.disabled = false;
-      postAction({ action: 'reset' });
-    }
-
-    // 9. 渲染畫面與輸入框狀態控制
-    function renderGame(data) {
-      currentGameState = data;
-      const { status, question, answers } = data;
-
-      const questionEl = document.getElementById('display-question');
-      const statusBadge = document.getElementById('status-badge');
-      const hostControlsSetup = document.getElementById('host-controls-setup');
-      const hostControlsPlaying = document.getElementById('host-controls-playing');
-      const answerInput = document.getElementById('input-answer');
-      const submitBtn = document.getElementById('btn-submit-answer');
-
-      if (status === 'setup') {
-        statusBadge.innerText = "⏳ 等待房主出題中...";
-        statusBadge.className = "text-xs font-semibold px-3 py-1 rounded-full bg-notion-bg text-notion-subtext border border-notion-border inline-block mb-3";
-        questionEl.innerText = "房主正在思考題目...";
-        
-        hostControlsSetup.classList.remove('hidden');
-        hostControlsPlaying.classList.add('hidden');
-        
-        // 出題階段：鎖定玩家輸入框並給予明確提示
-        answerInput.disabled = true;
-        answerInput.placeholder = "請等待房主發布題目後再作答...";
-        submitBtn.disabled = true;
-        
-      } else if (status === 'playing') {
-        statusBadge.innerText = "✍️ 作答進行中 (牌面朝下)";
-        statusBadge.className = "text-xs font-bold px-3 py-1 rounded-full bg-morandi-dusty/20 text-morandi-dusty border border-morandi-dusty/40 inline-block mb-3";
-        questionEl.innerText = question || "題目載入中...";
-        
-        hostControlsSetup.classList.add('hidden');
-        hostControlsPlaying.classList.remove('hidden');
-        
-        // 作答階段：啟用輸入框
-        answerInput.disabled = false;
-        if (answerInput.placeholder.includes("請等待")) {
-          answerInput.placeholder = "寫下你的心電感應答案...";
-        }
-        submitBtn.disabled = false;
-        
-      } else if (status === 'revealed') {
-        statusBadge.innerText = "✨ 翻牌揭曉中！";
-        statusBadge.className = "text-xs font-bold px-3 py-1 rounded-full bg-morandi-terracotta/20 text-morandi-terracotta border border-morandi-terracotta/40 inline-block mb-3";
-        questionEl.innerText = question;
-        
-        hostControlsSetup.classList.add('hidden');
-        hostControlsPlaying.classList.remove('hidden');
-        
-        // 揭曉階段：鎖定輸入框
-        answerInput.disabled = true;
-        answerInput.placeholder = "本局已開牌揭曉！等待房主重置...";
-        submitBtn.disabled = true;
-      }
-
-      // 更新提交計數
-      const playerList = Object.keys(answers || {});
-      document.getElementById('submitted-count').innerText = `已提交: ${playerList.length} 人`;
-
-      // 渲染卡片 (包含 3D 翻牌動畫)
-      renderCards(answers, status === 'revealed');
-    }
-
-    // 10. 渲染 3D 翻牌卡片
-    function renderCards(answers, isRevealed) {
-      const grid = document.getElementById('cards-grid');
-      const players = Object.keys(answers || {});
-
-      if (players.length === 0) {
-        grid.innerHTML = `<div class="col-span-full text-center py-8 text-notion-subtext text-xs border-2 border-dashed border-notion-border rounded-xl">目前尚無玩家提交答案...</div>`;
-        return;
-      }
-
-      // Morandi 莫蘭迪卡片色彩池
-      const morandiColors = [
-        'bg-[#8A9A86] text-white', // Sage
-        'bg-[#7D8CC4] text-white', // Dusty Blue
-        'bg-[#C88D79] text-white', // Terracotta
-        'bg-[#A39185] text-white', // Taupe
-        'bg-[#A0A08B] text-white', // Olive
-      ];
-
-      grid.innerHTML = players.map((name, index) => {
-        const answer = answers[name];
-        const colorClass = morandiColors[index % morandiColors.length];
-        const isFlipped = isRevealed ? 'flipped' : '';
-
-        return `
-          <div class="h-32 perspective-1000">
-            <div class="card-inner ${isFlipped} relative w-full h-full">
-              <!-- 卡片正面 (未翻開) -->
-              <div class="card-front bg-white border border-notion-border rounded-xl p-4 flex flex-col justify-between shadow-sm">
-                <span class="text-xs font-bold text-notion-subtext border-b border-notion-border pb-1 truncate">${name}</span>
-                <div class="flex items-center justify-center flex-1">
-                  <span class="text-xs text-morandi-sage font-bold flex items-center gap-1.5">
-                    <span class="w-2.5 h-2.5 rounded-full bg-morandi-sage inline-block animate-ping"></span> 已完成
-                  </span>
-                </div>
-              </div>
-
-              <!-- 卡片背面 (開牌翻轉) -->
-              <div class="card-back ${colorClass} rounded-xl p-4 flex flex-col justify-between shadow-md">
-                <span class="text-xs font-semibold opacity-90 border-b border-white/20 pb-1 truncate">${name}</span>
-                <div class="flex items-center justify-center flex-1">
-                  <p class="text-base font-bold text-center break-all">${answer}</p>
-                </div>
-              </div>
+    <div class="container">
+        <!-- 個人資訊區 -->
+        <div class="profile-section">
+            <div class="avatar-wrapper">
+                <div class="avatar-glow"></div>
+                <img src="https://i.postimg.cc/BQm7xS3C/unnamed.webp" alt="大頭貼" class="avatar">
             </div>
-          </div>
-        `;
-      }).join('');
-    }
-  </script>
+            <h1 class="profile-name">余冠毅</h1>
+            <p class="profile-title">網頁程式設計 | 學習作品集</p>
+            
+            <div class="progress-container">
+                <div class="progress-bar"></div>
+            </div>
+            <p class="progress-text">學習進度：5 / 16 關卡已解鎖 (31.25%)</p>
+        </div>
+
+        <!-- 16 個關卡按鈕網格 -->
+        <div class="grid-container">
+            
+            <!-- Week 1 (已解鎖) -->
+            <a href="w1/index.html" class="level-card unlocked">
+                <div class="card-header">
+                    <span class="badge">WEEK 01</span>
+                    <span class="status-icon">🚀</span>
+                </div>
+                <div class="card-title">Week 1 - 數位名片</div>
+            </a>
+
+            <!-- Week 2 (已解鎖) -->
+            <a href="w2/index.html" class="level-card unlocked">
+                <div class="card-header">
+                    <span class="badge">WEEK 02</span>
+                    <span class="status-icon">🍕</span>
+                </div>
+                <div class="card-title">Week 2 - 今天吃甚麼？</div>
+            </a>
+
+            <!-- Week 3 (已解鎖) -->
+            <a href="w3/index.html" class="level-card unlocked">
+                <div class="card-header">
+                    <span class="badge">WEEK 03</span>
+                    <span class="status-icon">🎭</span>
+                </div>
+                <div class="card-title">Week 3 - 迷因產生器</div>
+            </a>
+
+            <!-- Week 4 (已解鎖) -->
+            <a href="w4/index.html" class="level-card unlocked">
+                <div class="card-header">
+                    <span class="badge">WEEK 04</span>
+                    <span class="status-icon">💬</span>
+                </div>
+                <div class="card-title">Week 4 - 悄悄話</div>
+            </a>
+
+            <!-- Week 5 (已解鎖) -->
+            <a href="w5/index.html" class="level-card unlocked">
+                <div class="card-header">
+                    <span class="badge">WEEK 05</span>
+                    <span class="status-icon">📡</span>
+                </div>
+                <div class="card-title">Week 5 - 雲端心電感應圖</div>
+            </a>
+
+            <!-- Week 6 ~ Week 16 (未解鎖狀態) -->
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 06</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
+
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 07</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
+
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 08</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
+
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 09</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
+
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 10</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
+
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 11</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
+
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 12</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
+
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 13</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
+
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 14</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
+
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 15</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
+
+            <a href="javascript:void(0);" class="level-card locked">
+                <div class="card-header">
+                    <span class="badge">WEEK 16</span>
+                    <span class="lock-icon">🔒</span>
+                </div>
+                <div class="card-title">未解鎖關卡</div>
+            </a>
+
+        </div>
+    </div>
+
 </body>
 </html>
-"""
-
-with open("index.html", "w", encoding="utf-8") as f:
-    f.write(html_content)
-
-print("Merged index.html successfully generated.")
